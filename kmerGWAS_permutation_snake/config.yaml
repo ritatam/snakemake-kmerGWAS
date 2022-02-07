@@ -1,0 +1,53 @@
+
+# UPDATE DATE BEFORE EACH RUN !!! #
+
+date: "20210728-perm0.8"
+
+
+Pst_bed_date: "20210325"
+    
+    
+# ========= filenames ========= #
+pathotype_book: "/g/data/xf3/ht5438/data/Pathotype_book/20210412_pathotype_book.xlsx"
+
+kmerGWAS_script: "/home/106/ht5438/kmerGWAS_perm_snake/kmerGWAS_perm.py"
+
+kmer_to_fasta_script: "/home/106/ht5438/kmerGWAS_perm_snake/kmer_to_fasta.py"
+
+ref_fa: "/g/data/xf3/ht5438/data/genome/Pst104E/Pst_104E_v13_ph_ctg.fa"
+
+
+
+# ========= gene beds ========= #
+
+gene_beds:
+    genes: "/g/data/xf3/ht5438/data/genome/Pst104E/Gene_beds/Pst_104E_v13_ph_ctg.genes.gene.bed"
+    coeffectors: "/g/data/xf3/ht5438/data/genome/Pst104E/Gene_beds/Pst_104E_v13_ph_ctg.ceffectors.gene.bed"
+    secretome: "/g/data/xf3/ht5438/data/genome/Pst104E/Gene_beds/Pst_104E_v13_ph_ctg.secretome.gene.bed"
+
+
+
+# ========= kmerGWAS parameters ========= #
+min_allele_count: "2"
+
+min_percent: "0.1"
+
+kmer_length: "31"
+
+threads: "8"
+
+Pst_strain: "Pst104EDG"
+
+
+
+# ========= absolute paths ========= #
+kmerGWAS_library: "/g/data/xf3/ht5438/kmersGWAS_voichek/kmersGWAS"
+
+OUTDIR_BASE: "/scratch/xf3/ht5438/kmerGWAS/kmerGWAS_output"
+
+STRAND_DIR: "/g/data/xf3/analysis/kmerGWAS/Pst_AVR_hunting/samples"
+
+ANALYSIS_DIR: "/scratch/xf3/ht5438/kmerGWAS/kmerGWAS_analysis"
+
+paired_end_reads_path: "/g/data/xf3/ht5438/data/Illumina/trimmed"
+

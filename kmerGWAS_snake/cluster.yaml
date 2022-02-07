@@ -1,0 +1,22 @@
+__default__:
+    mem: 50G
+    queue: normal
+    time: "05:00:00"
+    jobfs: 4G
+    project: xf3
+    name: "{rule}" 
+    threads: 2
+
+kmerGWAS:
+    time: "12:00:00"
+    threads: 16
+    mem: 68G
+
+gunzip_reads:
+    mem: 68G
+
+bwamem2_mapping_samtools_sort:
+    mem: 150G
+    
+bwamem2_kmer_mapping:
+    mem: 150G

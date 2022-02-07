@@ -1,0 +1,78 @@
+
+# UPDATE DATE BEFORE EACH RUN !!! #
+
+date: "20210325"
+
+Yr_name:
+    Yr6: "Yr6"
+    Yr7: "Yr7"
+    Yr8: "Yr8"
+    Yr9: "Yr9"
+    Yr43: "Yr43"
+    
+    # Yr1: "Yr1"
+    # Yr10: "Yr10"
+    # Yr17: "Yr17"
+    # Yr2: "Yr2"
+    # Yr21: "Yr21"
+    # Yr24: "Yr24"
+    # Yr25: "Yr25"
+    # Yr26: "Yr26"
+    # Yr27: "Yr27"
+    # Yr32: "Yr32"
+    # Yr4: "Yr4"
+    # Yr44: "Yr44"
+    # Yr76: "Yr76"
+    # YrA: "YrA"
+    # YrCN19: "YrCN19"
+    # YrExp2: "YrExp2"
+    # YrSd: "YrSd"
+    # YrSu: "YrSu"
+    # YrTr1: "YrTr1"
+    
+
+
+# ========= filenames ========= #
+pathotype_book: "/g/data/xf3/ht5438/data/Pathotype_book/20210412_pathotype_book.xlsx"
+
+kmerGWAS_script: "/home/106/ht5438/kmerGWAS_snake/kmerGWAS.py"
+
+kmer_to_fasta_script: "/home/106/ht5438/kmerGWAS_snake/kmer_to_fasta.py"
+
+ref_fa: "/g/data/xf3/ht5438/data/genome/Pst104E/Pst_104E_v13_ph_ctg.fa"
+
+
+
+# ========= gene beds ========= #
+
+gene_beds:
+    genes: "/g/data/xf3/ht5438/data/genome/Pst104E/Gene_beds/Pst_104E_v13_ph_ctg.genes.gene.bed"
+    coeffectors: "/g/data/xf3/ht5438/data/genome/Pst104E/Gene_beds/Pst_104E_v13_ph_ctg.ceffectors.gene.bed"
+    secretome: "/g/data/xf3/ht5438/data/genome/Pst104E/Gene_beds/Pst_104E_v13_ph_ctg.secretome.gene.bed"
+
+
+
+# ========= kmerGWAS parameters ========= #
+min_allele_count: "2"
+
+min_percent: "0.1"
+
+kmer_length: "31"
+
+threads: "8"
+
+Pst_strain: "Pst104EDG"
+
+
+
+# ========= absolute paths ========= #
+kmerGWAS_library: "/g/data/xf3/ht5438/kmersGWAS_voichek/kmersGWAS"
+
+OUTDIR_BASE: "/scratch/xf3/ht5438/kmerGWAS_output"
+
+STRAND_DIR: "/g/data/xf3/analysis/kmerGWAS/Pst_AVR_hunting/samples"
+
+ANALYSIS_DIR: "/scratch/xf3/ht5438/kmerGWAS_analysis"
+
+paired_end_reads_path: "/g/data/xf3/ht5438/data/Illumina/trimmed"
+

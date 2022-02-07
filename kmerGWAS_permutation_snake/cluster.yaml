@@ -1,0 +1,27 @@
+__default__:
+    mem: 4G
+    queue: normal
+    time: "01:00:00"
+    project: xf3
+    jobfs: 100M
+    name: "{rule}" 
+    threads: 2
+
+kmerGWAS:
+    time: "02:30:00"
+    threads: 16
+    mem: 68G
+
+kmer_processing:
+    name: "kmer_processing"
+    time: "00:10:00"
+    mem: 500M
+
+bwamem2_kmer_mapping:
+    mem: 60G
+    threads: 16
+
+bed:
+    name: "pull_kmers"
+    time: "00:10:00"
+    mem: 500M

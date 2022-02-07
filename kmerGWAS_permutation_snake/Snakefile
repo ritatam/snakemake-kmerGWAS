@@ -1,0 +1,198 @@
+
+import os
+configfile: "config.yaml"
+
+random_lev=["0.8"]
+Yr_name = ["Yr6", "Yr7", "Yr8", "Yr9", "Yr43"]  # Selected 5 Yr genes
+# Yr_name = ["Yr1", "Yr4", "Yr6", "Yr7", "Yr8", "Yr9", "Yr10", "Yr24", "Yr43", "Yr44", "YrA", "YrExp2", "YrTr1"]  # 13 Yr genes
+
+rule all:
+    input:
+        expand(config["OUTDIR_BASE"] + "/" + config["date"] + "/perm_{random_lev}/{Yr_name}/gwas_results/kmers/pass_threshold_5per", Yr_name=Yr_name, random_lev=random_lev),
+        expand(config["ANALYSIS_DIR"] + "/" + config["date"] + "_analysis/perm_{random_lev}/{Yr_name}/kmers_fasta/{Yr_name}_kmers.fasta", Yr_name=Yr_name, random_lev=random_lev),
+        expand(config["OUTDIR_BASE"] + "/" + config["date"] + "/perm_{random_lev}/{Yr_name}/remove_large_files.done", Yr_name=Yr_name, random_lev=random_lev),
+        expand(config["ANALYSIS_DIR"] + "/" + config["date"] + "_analysis/perm_{random_lev}/{Yr_name}/kmer_mapping/{Yr_name}_kmer_align.bam", Yr_name=Yr_name, random_lev=random_lev),
+        expand(config["ANALYSIS_DIR"] + "/" + config["date"] + "_analysis/perm_{random_lev}/{Yr_name}/kmer_mapping/{Yr_name}_kmer_align.bed", Yr_name=Yr_name, random_lev=random_lev),
+        expand(config["ANALYSIS_DIR"] + "/" + config["date"] + "_analysis/perm_{random_lev}/{Yr_name}/kmer_mapping/pulled_kmers/{gene_beds}/" + config["Pst_strain"] + "_{Yr_name}_{gene_beds}_kmers.align.intersect", Yr_name=Yr_name, gene_beds=config["gene_beds"], random_lev=random_lev),
+        expand(config["ANALYSIS_DIR"] + "/" + config["date"] + "_analysis/perm_{random_lev}/{Yr_name}/kmer_mapping/pulled_kmers/{gene_beds}/" + config["Pst_strain"] + "_{Yr_name}_{gene_beds}_kmers.align.closest", Yr_name=Yr_name, gene_beds=config["gene_beds"], random_lev=random_lev),
+        expand(config["ANALYSIS_DIR"] + "/" + config["date"] + "_analysis/perm_{random_lev}/{Yr_name}/kmer_mapping/pulled_kmers/{gene_beds}/" + config["Pst_strain"] + "_{Yr_name}_{gene_beds}_kmers.align.uniq.closest", Yr_name=Yr_name, gene_beds=config["gene_beds"], random_lev=random_lev)
+
+
+rule kmerGWAS:
+    params:
+        Yr_name = "{Yr_name}",
+        rl = "{random_lev}"
+    output:
+        kmers = config["OUTDIR_BASE"] + "/" + config["date"] + "/perm_{random_lev}/{Yr_name}/gwas_results/kmers/pass_threshold_5per",
+    shell:
+        "rm -r {config[OUTDIR_BASE]}/{config[date]}/perm_{params.rl}/{params.Yr_name}/gwas_results; "
+        "{config[kmerGWAS_script]} -d {config[date]} -n {params.Yr_name} -p {config[pathotype_book]} \
+        -L {config[kmerGWAS_library]} -O {config[OUTDIR_BASE]} -S {config[STRAND_DIR]} --mac {config[min_allele_count]} \
+        -m {config[min_percent]} -k {config[kmer_length]} -t {config[threads]} --random_lev {params.rl}"
+
+
+rule kmer_to_fasta:
+    params:
+        Yr_name = "{Yr_name}",
+        rl = "{random_lev}"
+    input:
+        kmers = config["OUTDIR_BASE"] + "/" + config["date"] + "/perm_{random_lev}/{Yr_name}/gwas_results/kmers/pass_threshold_5per"
+    output:
+        fasta = config["ANALYSIS_DIR"] + "/" + config["date"] + "_analysis/perm_{random_lev}/{Yr_name}/kmers_fasta/{Yr_name}_kmers.fasta"
+    group: "kmer_processing"
+    shell:
+        "{config[kmer_to_fasta_script]} -n {params.Yr_name} -d {config[date]} -p {params.rl} -f {input.kmers} -k {config[kmer_length]} -o {config[ANALYSIS_DIR]}"
+
+
+rule rm_large_kmerGWAS_output:
+    params:
+        Yr_name = "{Yr_name}",
+        rl = "{random_lev}"
+    input:
+        kmers = config["OUTDIR_BASE"] + "/" + config["date"] + "/perm_{random_lev}/{Yr_name}/gwas_results/kmers/pass_threshold_5per"
+    output:
+        remove_done = config["OUTDIR_BASE"] + "/" + config["date"] + "/perm_{random_lev}/{Yr_name}/remove_large_files.done"
+    group: "kmer_processing"
+    shell:
+        "rm {config[OUTDIR_BASE]}/{config[date]}/perm_{params.rl}/{params.Yr_name}/*kmers_table* {config[OUTDIR_BASE]}/{config[date]}/perm_{params.rl}/{params.Yr_name}/*kmers_to_use*"
+        " && touch {output.remove_done}"
+
+
+# rule gunzip_reads:
+    # input:
+        # read1 = config["paired_end_reads_path"] + "/" + config["Pst_strain"] + "/" + config["Pst_strain"] + "_1.fastq.gz",
+        # read2 = config["paired_end_reads_path"] + "/" + config["Pst_strain"] + "/" + config["Pst_strain"] + "_2.fastq.gz"
+    # output:
+        # unzipped1 = temp(config["paired_end_reads_path"] + "/" + config["Pst_strain"] + "/" + config["Pst_strain"] + "_1.fastq"),
+        # unzipped2 = temp(config["paired_end_reads_path"] + "/" + config["Pst_strain"] + "/" + config["Pst_strain"] + "_2.fastq")
+    # shell:
+        # "gunzip --keep {input.read1} {input.read2}"
+
+
+# rule kat_fetch_reads:
+    # input:
+        # kmer_fasta = config["ANALYSIS_DIR"] + "/" + config["date"] + "_analysis/perm_{random_lev}/{Yr_name}/kmers_fasta/{Yr_name}_kmers.fasta",
+        # read1 = config["paired_end_reads_path"] + "/" + config["Pst_strain"] + "/" + config["Pst_strain"] + "_1.fastq",
+        # read2 = config["paired_end_reads_path"] + "/" + config["Pst_strain"] + "/" + config["Pst_strain"] + "_2.fastq"
+    # output:
+        # fastq1 = config["ANALYSIS_DIR"] + "/" + config["date"] + "_analysis/perm_{random_lev}/{Yr_name}/fetched_reads/kmer." + config["Pst_strain"] + ".in.R1.fastq",
+        # fastq2 = config["ANALYSIS_DIR"] + "/" + config["date"] + "_analysis/perm_{random_lev}/{Yr_name}/fetched_reads/kmer." + config["Pst_strain"] + ".in.R2.fastq"
+    # params:
+        # outdir_prefix = config["ANALYSIS_DIR"] + "/" + config["date"] + "_analysis/perm_{random_lev}/{Yr_name}/fetched_reads/kmer." + config["Pst_strain"]
+    # shell:
+        # "kat filter seq --output_prefix={params.outdir_prefix} --threads={config[threads]} \
+        # --seq={input.read1} --seq2={input.read2} {input.kmer_fasta}"
+
+
+
+# rule bwamem2_index:
+    # input:
+        # ref_fa = config["ref_fa"]
+    # params:
+        # cp_ref_fa_path = config["ANALYSIS_DIR"] + "/" + config["date"] + "_analysis/" + config["Pst_strain"] + "/.",
+        # prefix = config["ANALYSIS_DIR"] + "/" + config["date"] + "_analysis/" + config["Pst_strain"] + "/indexed_" + config["Pst_strain"]
+    # output:
+        # cp_ref_fa = config["ANALYSIS_DIR"] + "/" + config["date"] + "_analysis/" + config["Pst_strain"] + "/" + os.path.basename(config["ref_fa"]),
+        # index = multiext(config["ANALYSIS_DIR"] + "/" + config["date"] + "_analysis/" + config["Pst_strain"] + "/indexed_" + config["Pst_strain"], ".0123", ".amb", ".ann", ".bwt.2bit.64", ".pac")
+    # shell:
+        # "cp {input.ref_fa} {params.cp_ref_fa_path};"
+        # "bwa-mem2 index -p {params.prefix} {output.cp_ref_fa}"
+
+
+# rule bwamem2_mapping_samtools_sort:
+    # input:
+        # read1 = config["ANALYSIS_DIR"] + "/" + config["date"] + "_analysis/perm_{random_lev}/{Yr_name}/fetched_reads/kmer." + config["Pst_strain"] + ".in.R1.fastq",
+        # read2 = config["ANALYSIS_DIR"] + "/" + config["date"] + "_analysis/perm_{random_lev}/{Yr_name}/fetched_reads/kmer." + config["Pst_strain"] + ".in.R2.fastq"
+    # params:
+        # prefix = config["ANALYSIS_DIR"] + "/" + config["date"] + "_analysis/" + config["Pst_strain"] + "/indexed_" + config["Pst_strain"]
+    # output:
+        # bam = config["ANALYSIS_DIR"] + "/" + config["date"] + "_analysis/perm_{random_lev}/{Yr_name}/mapped_reads/" + config["Pst_strain"] + "_{Yr_name}.align.bam"
+    # envmodules:
+        # "samtools/1.9"
+    # shell:
+        # "bwa-mem2 mem -t {config[threads]} {params.prefix} {input.read1} {input.read2} | samtools sort -O BAM -@ 2 -o {output.bam} -"
+
+
+# rule bedtools_bamtobed:
+    # input:
+        # bam = config["ANALYSIS_DIR"] + "/" + config["date"] + "_analysis/perm_{random_lev}/{Yr_name}/mapped_reads/" + config["Pst_strain"] + "_{Yr_name}.align.bam"
+    # output:
+        # bed = config["ANALYSIS_DIR"] + "/" + config["date"] + "_analysis/perm_{random_lev}/{Yr_name}/mapped_reads/" + config["Pst_strain"] + "_{Yr_name}.align.bed"
+    # envmodules:
+        # "bedtools/2.28.0"
+    # shell:
+        # "bedtools bamtobed -i {input.bam} | bedtools sort > {output.bed}"
+
+
+# rule bedtools_sort_gene_beds:
+    # input:
+        # lambda wildcards: config["gene_beds"][wildcards.gene_beds]
+    # output:
+        # sorted_gene_beds = config["ANALYSIS_DIR"] + "/" + config["date"] + "_analysis/" + config["Pst_strain"] + "/sorted_gene_beds/" + "{gene_beds}.gene.bed"
+    # envmodules:
+        # "bedtools/2.28.0"
+    # shell:
+        # "bedtools sort -i {input} > {output.sorted_gene_beds}"
+    
+
+# rule bedtool_pull_reads:
+    # input:
+        # reads_bed = config["ANALYSIS_DIR"] + "/" + config["date"] + "_analysis/perm_{random_lev}/{Yr_name}/mapped_reads/" + config["Pst_strain"] + "_{Yr_name}.align.bed",
+        # gene_bed = config["ANALYSIS_DIR"] + "/" + config["date"] + "_analysis/" + config["Pst_strain"] + "/sorted_gene_beds/" + "{gene_beds}.gene.bed"
+    # output:
+        # intersect = config["ANALYSIS_DIR"] + "/" + config["date"] + "_analysis/perm_{random_lev}/{Yr_name}/pulled_reads/{gene_beds}/" + config["Pst_strain"] + "_{Yr_name}_{gene_beds}.align.intersect",
+        # closest = config["ANALYSIS_DIR"] + "/" + config["date"] + "_analysis/perm_{random_lev}/{Yr_name}/pulled_reads/{gene_beds}/" + config["Pst_strain"] + "_{Yr_name}_{gene_beds}.align.closest",
+        # uniq_closest = config["ANALYSIS_DIR"] + "/" + config["date"] + "_analysis/perm_{random_lev}/{Yr_name}/pulled_reads/{gene_beds}/" + config["Pst_strain"] + "_{Yr_name}_{gene_beds}.align.uniq.closest"
+    # envmodules:
+        # "bedtools/2.28.0"
+    # shell:
+        # "bedtools intersect -a {input.reads_bed} -b {input.gene_bed} | sort > {output.intersect};"
+        # "bedtools closest -a {input.reads_bed} -b {input.gene_bed} -io | sort > {output.closest};"
+        # "cut {output.closest} -f7,8,9,10,11,12 | sort | uniq | tail -n +2 > {output.uniq_closest}"   # tail -n +2 to remove the first line (appears to be nonsense)
+
+# ================ mapping kmers ===============
+
+rule bwamem2_kmer_mapping:
+    params:
+        prefix = config["ANALYSIS_DIR"] + "/" + config["Pst_bed_date"] + "_analysis/" + config["Pst_strain"] +"/indexed_" + config["Pst_strain"]
+    input:
+        kmer_fasta = config["ANALYSIS_DIR"] + "/" + config["date"] + "_analysis/perm_{random_lev}/{Yr_name}/kmers_fasta/{Yr_name}_kmers.fasta"
+    output:
+        bam = config["ANALYSIS_DIR"] + "/" + config["date"] + "_analysis/perm_{random_lev}/{Yr_name}/kmer_mapping/{Yr_name}_kmer_align.bam"
+    envmodules:
+        "samtools/1.9"
+    threads: 16
+    shell:
+        "bwa-mem2 mem -t {threads} {params.prefix} {input.kmer_fasta} | samtools sort -O BAM -@ 2 -o {output.bam} -"
+
+
+
+rule bedtools_kmer_bamtobed:
+    input:
+        bam = config["ANALYSIS_DIR"] + "/" + config["date"] + "_analysis/perm_{random_lev}/{Yr_name}/kmer_mapping/{Yr_name}_kmer_align.bam"
+    output:
+        bed = config["ANALYSIS_DIR"] + "/" + config["date"] + "_analysis/perm_{random_lev}/{Yr_name}/kmer_mapping/{Yr_name}_kmer_align.bed"
+    envmodules:
+        "bedtools/2.28.0"
+    group: "bed"
+    shell:
+        "bedtools bamtobed -i {input.bam} | bedtools sort > {output.bed}"
+
+
+
+rule bedtools_pull_kmers:
+    input:
+        kmer_bed = config["ANALYSIS_DIR"] + "/" + config["date"] + "_analysis/perm_{random_lev}/{Yr_name}/kmer_mapping/{Yr_name}_kmer_align.bed",
+        gene_bed = config["ANALYSIS_DIR"] + "/" + config["Pst_bed_date"] + "_analysis/" + config["Pst_strain"] + "/sorted_gene_beds/" + "{gene_beds}.gene.bed"
+    output:
+        intersect = config["ANALYSIS_DIR"] + "/" + config["date"] + "_analysis/perm_{random_lev}/{Yr_name}/kmer_mapping/pulled_kmers/{gene_beds}/" + config["Pst_strain"] + "_{Yr_name}_{gene_beds}_kmers.align.intersect",
+        closest = config["ANALYSIS_DIR"] + "/" + config["date"] + "_analysis/perm_{random_lev}/{Yr_name}/kmer_mapping/pulled_kmers/{gene_beds}/" + config["Pst_strain"] + "_{Yr_name}_{gene_beds}_kmers.align.closest",
+        uniq_closest = config["ANALYSIS_DIR"] + "/" + config["date"] + "_analysis/perm_{random_lev}/{Yr_name}/kmer_mapping/pulled_kmers/{gene_beds}/" + config["Pst_strain"] + "_{Yr_name}_{gene_beds}_kmers.align.uniq.closest"
+    envmodules:
+        "bedtools/2.28.0"
+    group: "bed"
+    shell:
+        "bedtools intersect -a {input.kmer_bed} -b {input.gene_bed} -wb | awk -v OFS='\\t' '{{print $1,$2,$3,$4,$10,$5,$6}}' | sort > {output.intersect};"
+        "bedtools closest -a {input.kmer_bed} -b {input.gene_bed} -io | sort > {output.closest};"
+        "cut {output.closest} -f7,8,9,10,11,12 | sort | uniq | tail -n +2 > {output.uniq_closest}"
+
