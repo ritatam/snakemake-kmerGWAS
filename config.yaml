@@ -1,0 +1,26 @@
+LIB_DIR: "/g/data/xf3/ht5438/softwares/kmersGWAS_voichek/kmersGWAS"
+FETCH_READS_WITH_KMERS_DIR: "/g/data/xf3/ht5438/softwares/fetch_reads_with_kmers"
+
+STRAND_DIR: "/scratch/xf3/ht5438/pst_avr_hunting/kmerGWAS/kmc"
+OUTPUT_DIR: "/scratch/xf3/ht5438/pst_avr_hunting/kmerGWAS/20220908"
+ANALYSIS_DIR: "/scratch/xf3/ht5438/pst_avr_hunting/kmerAnalysis/20220908"
+
+GENE_BED_DIR: "/g/data/xf3/ht5438/data/genome/Pst104E/Gene_beds"
+gene_beds: ["Pst_104E_v13_ph_ctg.genes.gene.bed", "Pst_104E_v13_ph_ctg.secretome.gene.bed", "Pst_104E_v13_ph_ctg.effectors.gene.bed"]
+
+SAMPLE_TO_FETCH_READS_FROM: "/g/data/xf3/ht5438/data/Illumina/Pst104EDG/trimmed/Pst104EDG"
+
+script: "scripts/common.py"
+phenotype_book: "files/20220908_pathotype_book.xlsx"
+sample_csv: "files/natural_isolates_SRA.csv"
+ref_genome: "/g/data/xf3/ht5438/data/genome/Pst104E/Pst_104E_v13_ph_ctg.fa"
+ref_genome_name: "Pst104E_ph"
+
+#phenotype: ["Yr6", "Yr7", "Yr8", "Yr9"]
+phenotype: "Yr8"
+THREADS: 32
+
+k_length: 31
+k_min_allowed_appearance_count: 5
+k_min_allowed_appearance_frequency: 0.05
+k_min_percent_appearance_in_each_strand_form: 0.2

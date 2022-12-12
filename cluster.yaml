@@ -1,0 +1,31 @@
+__default__:
+    mem: 32G
+    queue: normal
+    time: "05:00:00"
+    jobfs: 4G
+    project: xf3
+    name: "{rule}" 
+    threads: 8
+
+prepare_required_files:
+    time: "00:10:00"
+    threads: 1
+    mem: 100M
+
+kmerGWAS:
+    threads: 32
+
+kmers2fasta:
+    time: "00:10:00"
+    threads: 1
+    mem: 100M
+    
+READS_bedtools_bamtobed:
+    time: "00:10:00"
+    threads: 1
+    mem: 2G
+
+READS_bedtools_intersect:
+    time: "00:10:00"
+    threads: 1
+    mem: 2G
